@@ -14,6 +14,14 @@ import { Select } from "../components/select";
 import db from "../db";
 import { type Game, games, User, users } from "../db/schema";
 
+export const meta: MetaFunction = () => {
+	return [
+		{
+			title: "A Quiz App built with AI",
+		},
+	];
+};
+
 const validator = withZod(
 	z.object({
 		name: z.string().min(4).max(34),
@@ -36,47 +44,49 @@ export const loader = () => {
 
 export const action = async ({ request }: ActionFunctionArgs) => {
 	try {
-		console.error("Iniciando acción...");
 		const formData = await request.formData();
-		console.error("FormData recibido:", Object.fromEntries(formData.entries()));
-
 		const fieldValues = await validator.validate(formData);
-		console.error("Datos validados:", fieldValues);
 
 		if (fieldValues.error) {
-			console.error("Error de validación:", fieldValues.error);
 			return validationError(fieldValues.error);
 		}
+
 		const { name, topic, language, questionCount } = fieldValues.data;
 
-		console.error("Insertando usuario...");
-		const user = await db.insert(users).values({ name }).returning();
-		console.error("Usuario creado:", user);
-
-		if (!user || user.length === 0) {
-			throw new Response("Error creating user", { status: 500 });
+		// Verificar conexión a la base de datos
+		try {
+			await db.select().from(users).limit(1);
+		} catch (error) {
+			console.error("Error de conexión a la base de datos:", error);
+			return json({ error: "Database connection error" }, { status: 500 });
 		}
 
-		console.error("Insertando juego...");
-		const game = await db
+		// Crear usuario
+		const [user] = await db.insert(users).values({ name }).returning();
+		if (!user) {
+			return json({ error: "Failed to create user" }, { status: 500 });
+		}
+
+		// Crear juego
+		const [game] = await db
 			.insert(games)
 			.values({
-				owner: user[0].id,
+				owner: user.id,
 				topic,
 				language,
 				questionCount,
+				questions: [],
 			})
 			.returning();
-		console.error("Juego creado:", game);
 
-		if (!game || game.length === 0) {
-			throw new Response("Error creating game", { status: 500 });
+		if (!game) {
+			return json({ error: "Failed to create game" }, { status: 500 });
 		}
 
-		return redirect(`/quizz?userId=${user[0].id}&gameId=${game[0].id}`);
+		return redirect(`/quizz?userId=${user.id}&gameId=${game.id}`);
 	} catch (error) {
-		console.error("Error en la acción:", error);
-		throw error;
+		console.error("Error in action:", error);
+		return json({ error: "Internal server error" }, { status: 500 });
 	}
 };
 

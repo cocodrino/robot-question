@@ -1,20 +1,21 @@
 CREATE TABLE "game_rankings" (
 	"id" serial PRIMARY KEY NOT NULL,
-	"game_id" integer,
-	"user_id" integer,
+	"game_id" text,
+	"user_id" text,
 	"score" integer NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "games" (
-	"id" serial PRIMARY KEY NOT NULL,
+	"id" text PRIMARY KEY NOT NULL,
 	"topic" text NOT NULL,
 	"language" text NOT NULL,
 	"question_count" integer NOT NULL,
-	"owner" integer
+	"owner" text,
+	"questions" jsonb DEFAULT '[]'::jsonb NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "users" (
-	"id" serial PRIMARY KEY NOT NULL,
+	"id" text PRIMARY KEY NOT NULL,
 	"name" text NOT NULL
 );
 --> statement-breakpoint

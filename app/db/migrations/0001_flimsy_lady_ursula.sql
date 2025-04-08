@@ -1,1 +1,0 @@
-ALTER TABLE "games" ADD COLUMN "questions" jsonb DEFAULT '[]'::jsonb NOT NULL;

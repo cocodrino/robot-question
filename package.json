@@ -11,7 +11,9 @@
 		"typecheck": "tsc",
 		"routes:gen": "routes-gen -d @routes-gen/remix",
 		"db:generate": "drizzle-kit generate:pg",
-		"db:push": "drizzle-kit push:pg"
+		"db:push": "drizzle-kit push:pg",
+		"db:migrate": "tsx app/db/migrate.ts",
+		"db:reset": "psql $DATABASE_URL -c \"DROP TABLE IF EXISTS game_rankings, games, users CASCADE;\" && npm run db:migrate"
 	},
 	"dependencies": {
 		"@remix-run/node": "^2.16.4",
@@ -49,7 +51,8 @@
 		"tailwindcss": "^3.4.4",
 		"typescript": "^5.1.6",
 		"vite": "^6.0.0",
-		"vite-tsconfig-paths": "^4.2.1"
+		"vite-tsconfig-paths": "^4.2.1",
+		"tsx": "^4.7.1"
 	},
 	"engines": {
 		"node": ">=20.0.0"

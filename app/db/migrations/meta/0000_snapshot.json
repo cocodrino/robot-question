@@ -1,5 +1,5 @@
 {
-  "id": "d93862f3-76c6-4663-bae6-c1fe377bbcf1",
+  "id": "18097c59-b7ca-487a-8b52-227861690bf9",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -16,13 +16,13 @@
         },
         "game_id": {
           "name": "game_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
         "user_id": {
           "name": "user_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -74,7 +74,7 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "text",
           "primaryKey": true,
           "notNull": true
         },
@@ -98,9 +98,16 @@
         },
         "owner": {
           "name": "owner",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "questions": {
+          "name": "questions",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
         }
       },
       "indexes": {},
@@ -131,7 +138,7 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "text",
           "primaryKey": true,
           "notNull": true
         },
