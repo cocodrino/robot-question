@@ -1,18 +1,9 @@
 import type { MetaFunction } from "@remix-run/node";
 import type { ActionFunctionArgs } from "@remix-run/node";
-import { json, redirect, type TypedResponse } from "@remix-run/node";
-import {
-	useLoaderData,
-	useNavigate,
-	useSubmit,
-	useFetcher,
-} from "@remix-run/react";
+import { json, redirect } from "@remix-run/node";
+import { useLoaderData } from "@remix-run/react";
 import { withZod } from "@remix-validated-form/with-zod";
-import {
-	ValidatedForm,
-	validationError,
-	type ValidationErrorResponseData,
-} from "remix-validated-form";
+import { ValidatedForm, validationError } from "remix-validated-form";
 import { route } from "routes-gen";
 import { z } from "zod";
 import React from "react";
@@ -21,19 +12,7 @@ import { Input } from "../components/input";
 import { RadioGroup } from "../components/radio-group";
 import { Select } from "../components/select";
 import db from "../db";
-import { Game, games, User, users } from "../db/schema";
-import type { GameQuestions } from "../types/game-questions";
-import { useGameStore } from "~/store/gameStore";
-
-export const meta: MetaFunction = () => {
-	return [
-		{ title: "A Quiz App built with AI" },
-		{
-			name: "description",
-			content: "Generate quizzes from any topic using our robots",
-		},
-	];
-};
+import { type Game, games, User, users } from "../db/schema";
 
 const validator = withZod(
 	z.object({
@@ -55,59 +34,64 @@ export const loader = () => {
 	};
 };
 
-interface NewGameResponse {
-	gameId: string;
-	userId: string;
-	game: GameQuestions;
-}
+export const action = async ({ request }: ActionFunctionArgs) => {
+	try {
+		console.error("Iniciando acción...");
+		const formData = await request.formData();
+		console.error("FormData recibido:", Object.fromEntries(formData.entries()));
 
-export const action = async ({
-	request,
-}: ActionFunctionArgs): Promise<NewGameResponse> => {
-	const fieldValues = await validator.validate(await request.formData());
-	if (fieldValues.error) {
-		throw new Response("Validation error", { status: 400 });
+		const fieldValues = await validator.validate(formData);
+		console.error("Datos validados:", fieldValues);
+
+		if (fieldValues.error) {
+			console.error("Error de validación:", fieldValues.error);
+			return validationError(fieldValues.error);
+		}
+		const { name, topic, language, questionCount } = fieldValues.data;
+
+		console.error("Insertando usuario...");
+		const user = await db.insert(users).values({ name }).returning();
+		console.error("Usuario creado:", user);
+
+		if (!user || user.length === 0) {
+			throw new Response("Error creating user", { status: 500 });
+		}
+
+		console.error("Insertando juego...");
+		const game = await db
+			.insert(games)
+			.values({
+				owner: user[0].id,
+				topic,
+				language,
+				questionCount,
+			})
+			.returning();
+		console.error("Juego creado:", game);
+
+		if (!game || game.length === 0) {
+			throw new Response("Error creating game", { status: 500 });
+		}
+
+		return redirect(`/quizz?userId=${user[0].id}&gameId=${game[0].id}`);
+	} catch (error) {
+		console.error("Error en la acción:", error);
+		throw error;
 	}
-	const { name, topic, language, questionCount } = fieldValues.data;
-
-	const user = await db.insert(users).values({ name }).returning();
-	const game = await db
-		.insert(games)
-		.values({
-			owner: user[0].id,
-			topic,
-			language,
-			questionCount,
-		})
-		.returning();
-
-	return {
-		gameId: game[0].id.toString(),
-		userId: user[0].id.toString(),
-		game: { questions: [] },
-	};
 };
 
 export default function Index() {
 	const { defaultValues } = useLoaderData<typeof loader>();
-	const navigate = useNavigate();
-	const fetcher = useFetcher<NewGameResponse>();
-	const setGameData = useGameStore((state) => state.setGameData);
-
-	React.useEffect(() => {
-		if (fetcher.data) {
-			setGameData(Number(fetcher.data.userId), fetcher.data.game);
-			navigate("/quizz");
-		}
-	}, [fetcher.data, setGameData, navigate]);
 
 	return (
 		<div className="container mx-auto flex flex-col items-center justify-center h-screen">
 			<h1 className="text-4xl font-bold">Quiz App</h1>
+
 			<ValidatedForm
 				validator={validator}
+				method="post"
 				defaultValues={defaultValues}
-				fetcher={fetcher}
+				className="flex flex-col gap-4"
 			>
 				<Input name="name" label="Name" />
 				<Input name="topic" label="Topic" />
