@@ -1,7 +1,10 @@
+export interface GameQuestion {
+    question: string;
+    options: string[];
+    rightAnswer: { number: number, text: string };
+}
+
 export interface GameQuestions {
-    questions: {
-        question: string;
-        options: string[];
-        rightAnswer: number;
-    }[];
+    questions: GameQuestion[];
+
 }

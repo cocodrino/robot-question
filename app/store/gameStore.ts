@@ -1,7 +1,11 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { GameQuestions } from "../types/game-questions";
-import type { Game } from "~/db/schema";
+import type { Game as DbGame } from "~/db/schema";
+
+interface Game extends DbGame {
+    questions: GameQuestions[];
+}
 
 interface GameState {
     userId: string | null;

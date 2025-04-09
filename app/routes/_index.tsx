@@ -75,7 +75,18 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 				topic,
 				language,
 				questionCount,
-				questions: [],
+				questions: [
+					{
+						question: "What is the capital of France?",
+						rightAnswer: { number: 1, text: "Paris" },
+						options: ["Paris", "London", "Madrid", "Rome"],
+					},
+					{
+						question: "What is the capital of France?",
+						rightAnswer: { number: 1, text: "Paris" },
+						options: ["Paris", "London", "Madrid", "Rome"],
+					},
+				],
 			})
 			.returning();
 

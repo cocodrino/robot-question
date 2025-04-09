@@ -5,6 +5,8 @@ import { games, users } from "~/db/schema";
 import db from "~/db";
 import React from "react";
 import { eq } from "drizzle-orm";
+import type { GameQuestions } from "~/types/game-questions";
+import QuestionBuilder from "~/components/question-builder";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
 	const url = new URL(request.url);
@@ -30,6 +32,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 		throw new Response("Game or user not found", { status: 404 });
 	}
 
+	console.log(game[0]);
 	return json({ game: game[0], user: user[0] });
 };
 
@@ -39,19 +42,32 @@ export default function Quizz() {
 
 	React.useEffect(() => {
 		if (game && user) {
+			console.log("game", game);
 			setGameData(user.id, {
 				...game,
-				questions: game.questions || [],
+				questions: (game.questions as GameQuestions[]) || [],
 			});
 		}
 	}, [game, user, setGameData]);
 
 	return (
-		<div>
-			<h1>Quizz for user {user.name}</h1>
-			<p>Game Topic: {game.topic}</p>
-			<p>Language: {game.language}</p>
-			<p>Question Count: {game.questionCount}</p>
+		<div className="min-h-screen bg-gray-100 py-8">
+			<div className="max-w-4xl mx-auto px-4">
+				<div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+					<h1 className="text-2xl font-bold mb-4">Quiz for {user.name}</h1>
+					<div className="grid grid-cols-2 gap-4 mb-4">
+						<div>
+							<p className="text-gray-600">Topic:</p>
+							<p className="font-semibold">{game.topic}</p>
+						</div>
+						<div>
+							<p className="text-gray-600">Language:</p>
+							<p className="font-semibold">{game.language}</p>
+						</div>
+					</div>
+				</div>
+				<QuestionBuilder />
+			</div>
 		</div>
 	);
 }
