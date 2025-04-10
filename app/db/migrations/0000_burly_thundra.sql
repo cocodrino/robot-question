@@ -8,8 +8,6 @@ CREATE TABLE "game_rankings" (
 CREATE TABLE "games" (
 	"id" text PRIMARY KEY NOT NULL,
 	"topic" text NOT NULL,
-	"language" text NOT NULL,
-	"question_count" integer NOT NULL,
 	"owner" text,
 	"questions" jsonb DEFAULT '[]'::jsonb NOT NULL
 );

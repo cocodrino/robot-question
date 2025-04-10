@@ -1,5 +1,5 @@
 {
-  "id": "18097c59-b7ca-487a-8b52-227861690bf9",
+  "id": "551830e9-e0dc-47c8-a8f3-20dc188f251e",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -81,18 +81,6 @@
         "topic": {
           "name": "topic",
           "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "language": {
-          "name": "language",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "question_count": {
-          "name": "question_count",
-          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },

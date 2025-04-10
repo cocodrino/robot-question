@@ -8,8 +8,6 @@ export const users = pgTable("users", {
 export const games = pgTable("games", {
     id: text("id").primaryKey().$defaultFn(() => generateId()),
     topic: text("topic").notNull(),
-    language: text("language").notNull(),
-    questionCount: integer("question_count").notNull(),
     owner: text("owner").references(() => users.id, { onDelete: 'cascade' }),
     questions: jsonb("questions").notNull().default([]),
 });
@@ -23,9 +21,9 @@ export const gameRankings = pgTable("game_rankings", {
 
 // we want small ids, uuids are too long
 function generateId(): string {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-+=!@#$%^&*()';
     let result = '';
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 6; i++) {
         result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return result;
