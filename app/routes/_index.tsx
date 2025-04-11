@@ -21,7 +21,15 @@ import { Button } from "../components/ui/button";
 export const meta: MetaFunction = () => {
 	return [
 		{
-			title: "A Quiz App built with AI",
+			title: "A Quiz App built with AI - http://localhost:5174/",
+		},
+		{
+			name: "description",
+			content: "A Quiz App built with AI - http://localhost:5174/",
+		},
+		{
+			name: "viewport",
+			content: "width=device-width, initial-scale=1",
 		},
 	];
 };
@@ -156,7 +164,7 @@ export default function Index() {
 			<div className="container mx-auto flex flex-col items-center justify-center h-screen">
 				<AsciiArt />
 				<h1 className="md:text-xl text-2xl font-bold">
-					Generate Quizz for your favorite topic using A.I!
+					Generate Quizz for your favorite topic using A.I!!!
 				</h1>
 
 				<ValidatedForm
