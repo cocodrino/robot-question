@@ -158,4 +158,4 @@ export const generateQuizQuestions = async (topic: string) => {
   }
 };
 
-generateQuizQuestions('venezuelan history');
+//generateQuizQuestions('venezuelan history');

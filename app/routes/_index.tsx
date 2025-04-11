@@ -12,8 +12,11 @@ import { eq } from "drizzle-orm";
 import { Input } from "../components/input";
 import { RadioGroup } from "../components/radio-group";
 import { Select } from "../components/select";
+import { AsciiArt } from "../components/ascii-art";
 import db from "../db";
 import { type Game, games, User, users } from "../db/schema";
+import { AnimatedPopup } from "../components/animated-popup";
+import { Button } from "../components/ui/button";
 
 export const meta: MetaFunction = () => {
 	return [
@@ -27,8 +30,6 @@ const validator = withZod(
 	z.object({
 		name: z.string().min(4).max(34),
 		topic: z.string().min(4).max(34).optional(),
-		language: z.enum(["spanish", "english"]),
-		questionCount: z.enum(["10", "20", "30"]).transform(Number),
 	}),
 );
 
@@ -50,8 +51,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 		defaultValues: {
 			name: "",
 			topic: "",
-			language: "english" as const,
-			questionCount: 10,
 		},
 		game,
 	};
@@ -108,7 +107,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 			);
 		}
 
-		const { language, questionCount } = fieldValues.data;
 		const [game] = await db
 			.insert(games)
 			.values({
@@ -144,30 +142,42 @@ export default function Index() {
 	const { defaultValues, game } = useLoaderData<typeof loader>();
 
 	return (
-		<div className="container mx-auto flex flex-col items-center justify-center h-screen">
-			<h1 className="text-4xl font-bold">Quiz App</h1>
-
-			<ValidatedForm
-				validator={validator}
-				method="post"
-				defaultValues={defaultValues}
-				className="flex flex-col gap-4"
+		<div>
+			<AnimatedPopup
+				ubication="top"
+				margin={1}
+				timeTransition={0.5}
+				timeToShow={1000 * 5}
 			>
-				<Input name="name" label="Name" />
-				{!game && <Input name="topic" label="Topic" />}
+				<div className="bg-white p-4 rounded-lg shadow-lg text-black">
+					¡Mensaje de ejemplo!
+				</div>
+			</AnimatedPopup>
+			<div className="container mx-auto flex flex-col items-center justify-center h-screen">
+				<AsciiArt />
+				<h1 className="md:text-xl text-2xl font-bold">
+					Generate Quizz for your favorite topic using A.I!
+				</h1>
 
-				<button className="btn btn-accent" type="submit">
-					{game ? "Join Game" : "Create Game"}
-				</button>
-			</ValidatedForm>
-
-			<div className="mt-8">
-				<a
-					href="/create-quiz"
-					className="text-blue-500 hover:text-blue-700 underline"
+				<ValidatedForm
+					validator={validator}
+					method="post"
+					defaultValues={defaultValues}
+					className="flex flex-col gap-4 mt-8"
 				>
-					Create AI Quiz
-				</a>
+					<Input name="name" label="Your name (or alias)" className="w-96" />
+					{!game && (
+						<Input
+							name="topic"
+							label="Topic"
+							placeholder="Mythology,Marvel Characters, Alibaba Cloud"
+						/>
+					)}
+
+					<Button className="mt-6" type="submit">
+						{game ? "Join Game" : "Create Game"}
+					</Button>
+				</ValidatedForm>
 			</div>
 		</div>
 	);
