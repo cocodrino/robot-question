@@ -24,25 +24,25 @@ export default function Question({
 
 					// Determine the button's class
 					let buttonClass =
-						"p-3 rounded-lg border-2 border-text-lime-400 transition-all duration-300";
+						"p-3 rounded-lg border-2 transition-all duration-300";
 
 					if (showCorrectAnswer) {
 						// When showing answers
 						if (isCorrect) {
 							// If this is the correct answer, always show green
-							buttonClass += "bg-green-500 text-white";
+							buttonClass += " bg-lime-400 border-lime-400 text-black";
 						} else if (isSelected) {
 							// If this option was selected but is incorrect
-							buttonClass += "bg-red-500 text-white";
+							buttonClass += " bg-red-500 border-red-500";
 						} else {
 							// Other options remain white
-							buttonClass += "bg-white";
+							buttonClass += "border-lime-400";
 						}
 					} else {
 						// When not showing answers yet
 						buttonClass += isSelected
-							? "bg-gray-200"
-							: "bg-white hover:bg-gray-800";
+							? " bg-gray-200 border-lime-400"
+							: "border-lime-400 hover:bg-lime-400 hover:text-black";
 					}
 
 					return (
