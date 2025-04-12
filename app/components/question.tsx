@@ -15,8 +15,8 @@ export default function Question({
 	showCorrectAnswer,
 }: QuestionProps) {
 	return (
-		<div className="p-5 max-w-2xl mx-auto">
-			<h2 className="text-2xl font-semibold mb-5 text-gray-800">{question}</h2>
+		<div className="p-5 max-w-2xl mx-auto silkscreen-regular">
+			<h2 className="text-2xl font-light mb-12">{question}</h2>
 			<div className="flex flex-col gap-3">
 				{options.map((option) => {
 					const isSelected = selectedAnswer === option;
@@ -24,7 +24,7 @@ export default function Question({
 
 					// Determine the button's class
 					let buttonClass =
-						"p-3 rounded-lg border-2 transition-all duration-300 text-gray-800 ";
+						"p-3 rounded-lg border-2 border-text-lime-400 transition-all duration-300";
 
 					if (showCorrectAnswer) {
 						// When showing answers
@@ -42,7 +42,7 @@ export default function Question({
 						// When not showing answers yet
 						buttonClass += isSelected
 							? "bg-gray-200"
-							: "bg-white hover:bg-gray-100";
+							: "bg-white hover:bg-gray-800";
 					}
 
 					return (

@@ -36,8 +36,8 @@ export const meta: MetaFunction = () => {
 
 const validator = withZod(
 	z.object({
-		name: z.string().min(4).max(34),
-		topic: z.string().min(4).max(34).optional(),
+		name: z.string().min(3).max(34),
+		topic: z.string().min(3).max(34).optional(),
 	}),
 );
 
@@ -151,19 +151,9 @@ export default function Index() {
 
 	return (
 		<div>
-			<AnimatedPopup
-				ubication="top"
-				margin={1}
-				timeTransition={0.5}
-				timeToShow={1000 * 5}
-			>
-				<div className="bg-white p-4 rounded-lg shadow-lg text-black">
-					¡Mensaje de ejemplo!
-				</div>
-			</AnimatedPopup>
 			<div className="container mx-auto flex flex-col items-center justify-center h-screen">
 				<AsciiArt />
-				<h1 className="md:text-xl text-2xl font-bold">
+				<h1 className="md:text-xl text-2xl font-bold silkscreen-regular">
 					Generate Quizz for your favorite topic using A.I!!!
 				</h1>
 

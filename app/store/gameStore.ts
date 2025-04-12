@@ -17,11 +17,12 @@ interface GameState {
     setCorrectAnswerCount: (correctAnswerCount: number) => void;
     reset: () => void;
     game: Game | null;
+    numberQuestions: number;
 }
 
 export const useGameStore = create<GameState>()(
     persist(
-        (set) => ({
+        (set, get) => ({
             userId: null,
             questionIndex: 0,
             correctAnswerCount: 0,
@@ -30,9 +31,18 @@ export const useGameStore = create<GameState>()(
             setQuestionIndex: (questionIndex) => set({ questionIndex }),
             setCorrectAnswerCount: (correctAnswerCount) => set({ correctAnswerCount }),
             reset: () => set({ userId: null, game: null, questionIndex: 0, correctAnswerCount: 0 }),
+            numberQuestions: 0,
         }),
         {
             name: "color-game-storage",
         }
     )
 );
+
+// Actualizar numberQuestions cuando cambie el juego
+useGameStore.subscribe((state) => {
+    const newNumberQuestions = state.game?.questions.length || 0;
+    if (state.numberQuestions !== newNumberQuestions) {
+        useGameStore.setState({ numberQuestions: newNumberQuestions });
+    }
+});
