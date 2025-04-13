@@ -21,7 +21,7 @@ export const gameRankings = pgTable("game_rankings", {
 
 // we want small ids, uuids are too long
 function generateId(): string {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-+=!@#$%^&*()';
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_';
     let result = '';
     for (let i = 0; i < 6; i++) {
         result += chars.charAt(Math.floor(Math.random() * chars.length));

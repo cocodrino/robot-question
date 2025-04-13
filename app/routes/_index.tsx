@@ -21,6 +21,7 @@ import db from "../db";
 import { type Game, games, User, users } from "../db/schema";
 import { AnimatedPopup } from "../components/animated-popup";
 import { Button } from "../components/ui/button";
+import { generateQuizQuestions } from "~/mastra/mastra";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
 	const appUrl = data?.appUrl || "http://localhost:5174/";
@@ -111,7 +112,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 				return json({ error: "Game not found" }, { status: 404 });
 			}
 
-			console.log("redirecting to quizz");
+			console.log(`redirecting to quizz ${user.id} ${gameId}`);
 			return redirect(`/quizz?userId=${user.id}&gameId=${gameId}`);
 		}
 
@@ -123,24 +124,17 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 			);
 		}
 
+		console.log("generating questions for topic", topic);
+		const questions = await generateQuizQuestions(topic as string);
+		console.log("questions", questions);
+
 		console.log("inserting game");
 		const [game] = await db
 			.insert(games)
 			.values({
 				owner: user.id,
 				topic: topic as string,
-				questions: [
-					{
-						question: "What is the capital of France?",
-						rightAnswer: { number: 1, text: "Paris" },
-						options: ["Paris", "London", "Madrid", "Rome"],
-					},
-					{
-						question: "What is the capital of France?",
-						rightAnswer: { number: 1, text: "Paris" },
-						options: ["Paris", "London", "Madrid", "Rome"],
-					},
-				],
+				questions,
 			})
 			.returning();
 
@@ -148,7 +142,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 			return json({ error: "Failed to create game" }, { status: 500 });
 		}
 
-		console.log("redirecting to quizz");
+		console.log(`/quizz?userId=${user.id}&gameId=${game.id}`);
 		return redirect(`/quizz?userId=${user.id}&gameId=${game.id}`);
 	} catch (error) {
 		console.error("Error in action:", error);
@@ -162,7 +156,7 @@ export default function Index() {
 
 	return (
 		<div>
-			{navigation.state === "loading" && (
+			{["submitting", "loading"].includes(navigation.state) && (
 				<AnimatedPopup ubication="top" margin={1} timeTransition={0.5}>
 					<div className="flex flex-col bg-black p-5">
 						<video
@@ -171,7 +165,7 @@ export default function Index() {
 							loop
 							muted
 							playsInline
-							className="w-[512px] md:w-[580px] h-auto"
+							className="w-[220px] h-auto"
 						/>
 
 						<h2 className="text-xl my-4">Building your questions...</h2>
@@ -180,7 +174,7 @@ export default function Index() {
 			)}
 			<div className="container mx-auto flex flex-col items-center justify-center h-screen">
 				<AsciiArt />
-				<h1 className="md:text-xl text-2xl font-bold silkscreen-regular">
+				<h1 className="md:text-xl text-2xl font-bold silkscreen-regular px-4 mt-2">
 					Generate a quiz with questions created by our AI robot!
 				</h1>
 

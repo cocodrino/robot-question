@@ -95,67 +95,18 @@ export const generateQuizQuestions = async (topic: string) => {
 
       if (!questions || questions.length === 0) {
         console.error('No se pudieron generar preguntas');
-        // Fallback a preguntas de ejemplo
-        questions = [
-          {
-            question: "What is the capital of France?",
-            options: ["Paris", "London", "Berlin", "Madrid"],
-            rightAnswer: { number: 1, text: "Paris" }
-          }
-        ];
+        throw new Error('failed to generate questions');
       }
     } catch (error) {
       console.error('Error extrayendo preguntas:', error);
       throw error;
     }
 
-    // 2. Validar las preguntas con el segundo agente
-    const validationResult = await quizValidatorAgent.generate([
-      {
-        role: 'user',
-        content: `Validate these quiz questions: ${JSON.stringify(questions)}`,
-      },
-    ]);
 
-    console.log('Resultado validación:', JSON.stringify(validationResult, null, 2));
-
-    // Extraer el resultado de la validación
-    let isValid = true;
-    let errors: string[] = [];
-
-    try {
-      if (validationResult.toolCalls && validationResult.toolCalls.length > 0) {
-        const validateCall = validationResult.toolCalls.find(
-          (call) => {
-            const compatCall = call as CompatibleArgs;
-            return compatCall.toolName === 'validateQuestions' || compatCall.name === 'validateQuestions';
-          }
-        );
-
-        if (validateCall) {
-          const compatCall = validateCall as CompatibleArgs;
-          const args = compatCall.args || compatCall.arguments;
-          if (args) {
-            isValid = args.isValid as boolean ?? true;
-            errors = args.errors as string[] || [];
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error extrayendo validación:', error);
-    }
-
-    return {
-      questions,
-      validationResult: {
-        isValid,
-        errors
-      }
-    };
+    return questions;
   } catch (error) {
     console.error('Error en generateQuizQuestions:', error);
     throw error;
   }
 };
 
-//generateQuizQuestions('venezuelan history');

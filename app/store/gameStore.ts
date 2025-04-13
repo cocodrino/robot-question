@@ -18,6 +18,8 @@ interface GameState {
     reset: () => void;
     game: Game | null;
     numberQuestions: number;
+    feedback: "right" | "wrong" | "hidden";
+    setFeedback: (feedback: "right" | "wrong" | "hidden") => void;
 }
 
 export const useGameStore = create<GameState>()(
@@ -27,11 +29,13 @@ export const useGameStore = create<GameState>()(
             questionIndex: 0,
             correctAnswerCount: 0,
             game: null,
+            feedback: "right",
             setGameData: (userId, game) => set({ userId, game, questionIndex: 0, correctAnswerCount: 0 }),
             setQuestionIndex: (questionIndex) => set({ questionIndex }),
             setCorrectAnswerCount: (correctAnswerCount) => set({ correctAnswerCount }),
             reset: () => set({ userId: null, game: null, questionIndex: 0, correctAnswerCount: 0 }),
             numberQuestions: 0,
+            setFeedback: (feedback: "right" | "wrong" | "hidden") => set({ feedback }),
         }),
         {
             name: "color-game-storage",

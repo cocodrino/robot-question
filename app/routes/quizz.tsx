@@ -7,6 +7,7 @@ import React from "react";
 import { eq } from "drizzle-orm";
 import type { GameQuestions } from "~/types/game-questions";
 import QuestionBuilder from "~/components/question-builder";
+import { AnimatedPopup } from "~/components/animated-popup";
 
 export const action = async ({ request }: LoaderFunctionArgs) => {
 	const formData = await request.formData();
@@ -36,8 +37,11 @@ export const action = async ({ request }: LoaderFunctionArgs) => {
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
 	const url = new URL(request.url);
+	console.log("url", url);
 	const userId = url.searchParams.get("userId");
 	const gameId = url.searchParams.get("gameId");
+
+	console.log("loading quizz", userId, gameId);
 
 	if (!userId || !gameId) {
 		console.log("missing userId or gameId, redirecting to home");
@@ -80,6 +84,9 @@ export default function Quizz() {
 	const questionIndex = useGameStore((state) => state.questionIndex);
 	const correctAnswerCount = useGameStore((state) => state.correctAnswerCount);
 	const submit = useSubmit();
+	const feedback = useGameStore((state) => state.feedback);
+
+	console.log("feedback", feedback);
 
 	// Inicializar el store con los datos del juego
 	React.useEffect(() => {
@@ -102,28 +109,44 @@ export default function Quizz() {
 	};
 
 	return (
-		<div className="min-h-screen first-letter: py-8">
-			<div className="max-w-4xl mx-auto px-1">
-				<div className="text-2xl font-bold  w-full md:w-auto text-center">
-					<span className="silkscreen-light text-lime-400 text-xl md:text-2xl">
-						{game.topic}
-					</span>
-				</div>
-				<div className=" rounded-lg shadow-lg p-6 mb-4 flex justify-between silkscreen-regular">
-					<div className="counterQuestions flex text-2xl">
-						<span className="font-semibold text-violet-500">
-							{questionIndex + 1}
+		<main>
+			{feedback !== "hidden" && (
+				<AnimatedPopup ubication="top" margin={1} timeTransition={0.5}>
+					<div className="flex flex-col bg-black p-5">
+						<video
+							src={feedback === "right" ? "/yes.mp4" : "/no.mp4"}
+							autoPlay
+							loop
+							muted
+							playsInline
+							className="w-[220px] h-auto"
+						/>
+					</div>
+				</AnimatedPopup>
+			)}
+			<div className="min-h-screen first-letter: py-8">
+				<div className="max-w-4xl mx-auto px-1">
+					<div className="text-2xl font-bold  w-full md:w-auto text-center">
+						<span className="silkscreen-light text-lime-400 text-xl md:text-2xl">
+							{game.topic}
 						</span>
-						<span className=" text-white">/{numberQuestions}</span>
 					</div>
-					<div>
-						<p className="text-2xl font-bold text-pink-500">
-							{(correctAnswerCount || 0) * 100}
-						</p>
+					<div className=" rounded-lg shadow-lg p-6 mb-4 flex justify-between silkscreen-regular">
+						<div className="counterQuestions flex text-2xl">
+							<span className="font-semibold text-violet-500">
+								{questionIndex + 1}
+							</span>
+							<span className=" text-white">/{numberQuestions}</span>
+						</div>
+						<div>
+							<p className="text-2xl font-bold text-pink-500">
+								{(correctAnswerCount || 0) * 100}
+							</p>
+						</div>
 					</div>
+					<QuestionBuilder onSaveResults={handleSaveResults} />
 				</div>
-				<QuestionBuilder onSaveResults={handleSaveResults} />
 			</div>
-		</div>
+		</main>
 	);
 }
