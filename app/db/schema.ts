@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, jsonb, timestamp } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
     id: text("id").primaryKey().$defaultFn(() => generateId()),
@@ -17,6 +17,13 @@ export const gameRankings = pgTable("game_rankings", {
     gameId: text("game_id").references(() => games.id, { onDelete: 'cascade' }),
     userId: text("user_id").references(() => users.id, { onDelete: 'cascade' }),
     score: integer("score").notNull(),
+});
+
+export const ipRequests = pgTable("ip_requests", {
+    id: serial("id").primaryKey(),
+    ip: text("ip").notNull(),
+    count: integer("count").notNull().default(0),
+    date: timestamp("date").notNull().defaultNow(),
 });
 
 // we want small ids, uuids are too long
