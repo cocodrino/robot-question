@@ -1,12 +1,38 @@
-import { useLoaderData } from "@remix-run/react";
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { useLoaderData, useSubmit } from "@remix-run/react";
+import { json, type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useGameStore } from "~/store/gameStore";
-import { games, users } from "~/db/schema";
+import { games, users, gameRankings } from "~/db/schema";
 import db from "~/db";
 import React from "react";
 import { eq } from "drizzle-orm";
 import type { GameQuestions } from "~/types/game-questions";
 import QuestionBuilder from "~/components/question-builder";
+
+export const action = async ({ request }: LoaderFunctionArgs) => {
+	const formData = await request.formData();
+	const userId = formData.get("userId") as string;
+	const gameId = formData.get("gameId") as string;
+	const score = Number.parseInt(formData.get("score") as string);
+
+	if (!userId || !gameId) {
+		return json({ error: "Missing required data" }, { status: 400 });
+	}
+
+	console.log("saving results");
+	try {
+		await db.insert(gameRankings).values({
+			userId,
+			gameId,
+			score,
+		});
+
+		console.log("redirecting to results");
+		return redirect(`/results?userId=${userId}&gameId=${gameId}`);
+	} catch (error) {
+		console.error("Error saving results:", error);
+		return json({ error: "Failed to save results" }, { status: 500 });
+	}
+};
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
 	const url = new URL(request.url);
@@ -14,53 +40,76 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 	const gameId = url.searchParams.get("gameId");
 
 	if (!userId || !gameId) {
-		throw new Response("Missing required parameters", { status: 400 });
+		console.log("missing userId or gameId, redirecting to home");
+		return redirect("/");
 	}
 
-	const game = await db
-		.select()
-		.from(games)
-		.where(eq(games.id, gameId))
-		.limit(1);
+	// Verificar que el usuario existe
 	const user = await db
 		.select()
 		.from(users)
 		.where(eq(users.id, userId))
-		.limit(1);
+		.limit(1)
+		.then((rows) => rows[0]);
 
-	if (!game[0] || !user[0]) {
-		throw new Response("Game or user not found", { status: 404 });
+	if (!user) {
+		console.log("user not found, redirecting to home");
+		return redirect("/");
 	}
 
-	console.log(game[0]);
-	return json({ game: game[0], user: user[0] });
+	// Obtener el juego
+	const game = await db
+		.select()
+		.from(games)
+		.where(eq(games.id, gameId))
+		.limit(1)
+		.then((rows) => rows[0]);
+
+	if (!game) {
+		console.log("game not found, redirecting to home");
+		return redirect("/");
+	}
+
+	return json({ user, game });
 };
 
 export default function Quizz() {
-	const { game, user } = useLoaderData<typeof loader>();
-	const setGameData = useGameStore((state) => state.setGameData);
+	const { user, game } = useLoaderData<typeof loader>();
+	const { setGameData } = useGameStore();
 	const numberQuestions = useGameStore((state) => state.numberQuestions);
 	const questionIndex = useGameStore((state) => state.questionIndex);
 	const correctAnswerCount = useGameStore((state) => state.correctAnswerCount);
+	const submit = useSubmit();
+
+	// Inicializar el store con los datos del juego
 	React.useEffect(() => {
-		if (game && user) {
-			console.log("game", game);
-			setGameData(user.id, {
-				...game,
-				questions: (game.questions as GameQuestions[]) || [],
-			});
-		}
-	}, [game, user, setGameData]);
+		setGameData(user.id, {
+			...game,
+			questions: (game.questions as GameQuestions[]) || [],
+		});
+	}, [user.id, game, setGameData]);
+
+	const handleSaveResults = (data: {
+		userId: string;
+		gameId: string;
+		score: number;
+	}) => {
+		const formData = new FormData();
+		formData.append("userId", data.userId);
+		formData.append("gameId", data.gameId);
+		formData.append("score", data.score.toString());
+		submit(formData, { method: "post" });
+	};
 
 	return (
 		<div className="min-h-screen first-letter: py-8">
-			<div className="max-w-4xl mx-auto px-4">
-				<div className=" rounded-lg shadow-lg p-6 mb-8 flex justify-between silkscreen-regular">
-					<div className="text-2xl font-bold mb-4v   ">
-						Quiz:
-						<span className="silkscreen-light text-lime-400">{game.topic}</span>
-					</div>
-
+			<div className="max-w-4xl mx-auto px-1">
+				<div className="text-2xl font-bold  w-full md:w-auto text-center">
+					<span className="silkscreen-light text-lime-400 text-xl md:text-2xl">
+						{game.topic}
+					</span>
+				</div>
+				<div className=" rounded-lg shadow-lg p-6 mb-4 flex justify-between silkscreen-regular">
 					<div className="counterQuestions flex text-2xl">
 						<span className="font-semibold text-violet-500">
 							{questionIndex + 1}
@@ -73,7 +122,7 @@ export default function Quizz() {
 						</p>
 					</div>
 				</div>
-				<QuestionBuilder />
+				<QuestionBuilder onSaveResults={handleSaveResults} />
 			</div>
 		</div>
 	);

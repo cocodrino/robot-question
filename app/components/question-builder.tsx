@@ -2,18 +2,34 @@ import { useGameStore } from "~/store/gameStore";
 import Question from "./question";
 import { useEffect, useState } from "react";
 import type { GameQuestion } from "~/types/game-questions";
+import { useNavigate, useSubmit } from "@remix-run/react";
+import { json, redirect } from "@remix-run/node";
+import type { ActionFunctionArgs } from "@remix-run/node";
+import db from "~/db";
+import { gameRankings } from "~/db/schema";
 
-export default function QuestionBuilder() {
+interface QuestionBuilderProps {
+	onSaveResults: (data: {
+		userId: string;
+		gameId: string;
+		score: number;
+	}) => void;
+}
+
+export default function QuestionBuilder({
+	onSaveResults,
+}: QuestionBuilderProps) {
 	const { game, questionIndex, setQuestionIndex, setCorrectAnswerCount } =
 		useGameStore();
 	const [selectedAnswer, setSelectedAnswer] = useState<string | undefined>();
 	const [showCorrectAnswer, setShowCorrectAnswer] = useState(false);
+	const submit = useSubmit();
 
 	const currentQuestion = game?.questions[questionIndex] as
 		| GameQuestion
 		| undefined;
 
-	const handleAnswer = (answer: string) => {
+	const handleAnswer = async (answer: string) => {
 		setSelectedAnswer(answer);
 		setShowCorrectAnswer(true);
 
@@ -21,13 +37,24 @@ export default function QuestionBuilder() {
 			setCorrectAnswerCount(useGameStore.getState().correctAnswerCount + 1);
 		}
 
-		setTimeout(() => {
+		setTimeout(async () => {
 			if (questionIndex < (game?.questions.length ?? 0) - 1) {
 				setQuestionIndex(questionIndex + 1);
 				setSelectedAnswer(undefined);
 				setShowCorrectAnswer(false);
 			} else {
-				window.location.href = "/results";
+				const {
+					userId,
+					game: currentGame,
+					correctAnswerCount: count,
+				} = useGameStore.getState();
+				const score = (count || 0) * 100;
+
+				onSaveResults({
+					userId: userId || "",
+					gameId: currentGame?.id || "",
+					score,
+				});
 			}
 		}, 3000);
 	};

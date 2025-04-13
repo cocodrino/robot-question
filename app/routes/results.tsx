@@ -1,35 +1,105 @@
-import { useGameStore } from "~/store/gameStore";
-import { Link } from "@remix-run/react";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
+import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
+import db from "~/db";
+import { gameRankings, users } from "~/db/schema";
+import { eq, desc } from "drizzle-orm";
+
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+	const url = new URL(request.url);
+	const userId = url.searchParams.get("userId");
+	const gameId = url.searchParams.get("gameId");
+
+	if (!userId || !gameId) {
+		console.log("missing userId or gameId, redirecting to home");
+		return redirect("/");
+	}
+
+	const rankings = await db
+		.select({
+			userId: gameRankings.userId,
+			score: gameRankings.score,
+			userName: users.name,
+		})
+		.from(gameRankings)
+		.leftJoin(users, eq(gameRankings.userId, users.id))
+		.where(eq(gameRankings.gameId, gameId))
+		.orderBy(desc(gameRankings.score));
+
+	// Encontrar la posición del usuario actual
+	const userPosition = rankings.findIndex((r) => r.userId === userId) + 1;
+
+	return json({
+		rankings,
+		userPosition,
+		appUrl: process.env.APP_URL || "localhost:5174",
+	});
+};
 
 export default function Results() {
-	const { correctAnswerCount, game, reset } = useGameStore();
-	const totalQuestions = game?.questions.length || 0;
+	const { rankings, userPosition, appUrl } = useLoaderData<typeof loader>();
+	const [searchParams] = useSearchParams();
+	const gameId = searchParams.get("gameId");
 
 	return (
-		<div className="min-h-screen bg-gray-100 flex items-center justify-center">
-			<div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
-				<h1 className="text-3xl font-bold text-center mb-6">Quiz Results</h1>
+		<div className="container mx-auto flex flex-col items-center justify-center min-h-screen p-4">
+			<h1 className="text-4xl   mb-8 silkscreen-regular font-bold text-lime-500">
+				GAME COMPLETED
+			</h1>
 
-				<div className="text-center mb-8">
-					<p className="text-4xl font-bold text-green-600 mb-2">
-						{correctAnswerCount}/{totalQuestions}
-					</p>
-					<p className="text-gray-600">Correct Answers</p>
+			<div className="flex flex-col items-center justify-center">
+				<h2 className="text-2xl font-bold mb-4 silkscreen-regular">
+					YOUR SCORE:
+				</h2>
+
+				<p className="text-xl mb-2">
+					Position:{" "}
+					<span className="text-lime-500 silkscreen-regular">
+						#{userPosition}
+					</span>
+				</p>
+				<p className="text-xl mb-2">
+					Points:{" "}
+					<span className="text-lime-500 silkscreen-regular">
+						{rankings[userPosition - 1]?.score || 0}
+					</span>
+				</p>
+			</div>
+
+			<div className="p-8 rounded-lg shadow-lg w-full max-w-2xl">
+				<h2 className="text-2xl font-bold mb-4 silkscreen-regular">RANKING:</h2>
+				<div className="space-y-4">
+					{rankings.map((ranking, index) => (
+						<div
+							key={ranking.userId}
+							className={`flex justify-between items-center p-4 rounded-lg ${
+								index === userPosition - 1 ? "bg-lime-600" : "bg-black"
+							}`}
+						>
+							<div className="flex items-center gap-4">
+								<span className="text-xl font-bold">#{index + 1}</span>
+								<span className="text-lg">{ranking.userName}</span>
+							</div>
+							<span className="text-xl font-bold">{ranking.score} pts</span>
+						</div>
+					))}
 				</div>
 
-				<div className="text-center">
-					<p className="text-xl mb-4">
-						{((correctAnswerCount / totalQuestions) * 100).toFixed(0)}% Score
-					</p>
+				<div className="flex items-center justify-center mt-8">
+					<h3 className="silkscreen-regular">Share Game with Friends:</h3>
+					<div className="flex items-center justify-center">
+						<Link
+							to={`${appUrl}/?game=${gameId}`}
+							className="text-lime-500 silkscreen-regular underline"
+						>
+							{`${appUrl}/?game=${gameId}`}
+						</Link>
+					</div>
 				</div>
 
-				<div className="mt-8">
-					<Link
-						to="/"
-						onClick={reset}
-						className="block w-full bg-blue-500 text-white py-3 px-4 rounded-lg text-center hover:bg-blue-600 transition-colors"
-					>
-						Start New Quiz
+				<div className="flex items-center justify-center mt-8">
+					<Link to="/" className="text-lime-500 silkscreen-regular underline">
+						Play Again
 					</Link>
 				</div>
 			</div>

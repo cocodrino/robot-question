@@ -2,7 +2,7 @@ import type { FC } from "react";
 
 export const AsciiArt: FC = () => {
 	return (
-		<pre className="text-center font-mono text-[7px] sm:text-[12px] md:text-base lg:text-[10px] whitespace-pre text-lime-400">
+		<pre className="text-center font-mono text-[3px] sm:text-[5px] lg:text-[8px] whitespace-pre text-lime-400">
 			{`
 			                                                                                                                                                          
 8 888888888o.      ,o888888o.     8 888888888o       ,o888888o. 8888888 8888888888               ,o888888o.     8 8888      88  8 8888  8888888888',8888' 

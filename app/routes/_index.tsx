@@ -1,7 +1,11 @@
 import type { MetaFunction } from "@remix-run/node";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { useLoaderData, useSearchParams } from "@remix-run/react";
+import {
+	useLoaderData,
+	useNavigation,
+	useSearchParams,
+} from "@remix-run/react";
 import { withZod } from "@remix-validated-form/with-zod";
 import { ValidatedForm, validationError } from "remix-validated-form";
 import { route } from "routes-gen";
@@ -18,14 +22,15 @@ import { type Game, games, User, users } from "../db/schema";
 import { AnimatedPopup } from "../components/animated-popup";
 import { Button } from "../components/ui/button";
 
-export const meta: MetaFunction = () => {
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+	const appUrl = data?.appUrl || "http://localhost:5174/";
 	return [
 		{
-			title: "A Quiz App built with AI - http://localhost:5174/",
+			title: `A Quiz App built with AI - ${appUrl}`,
 		},
 		{
 			name: "description",
-			content: "A Quiz App built with AI - http://localhost:5174/",
+			content: `A Quiz App built with AI - ${appUrl}`,
 		},
 		{
 			name: "viewport",
@@ -61,11 +66,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 			topic: "",
 		},
 		game,
+		appUrl: process.env.APP_URL || "http://localhost:5174/",
 	};
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
 	try {
+		console.log("action");
 		const formData = await request.formData();
 		const fieldValues = await validator.validate(formData);
 
@@ -77,7 +84,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 		const url = new URL(request.url);
 		const gameId = url.searchParams.get("game");
 
-		// Verificar conexión a la base de datos
+		console.log("saving");
 		try {
 			await db.select().from(users).limit(1);
 		} catch (error) {
@@ -85,7 +92,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 			return json({ error: "Database connection error" }, { status: 500 });
 		}
 
-		// Crear usuario
+		console.log("creating user");
 		const [user] = await db.insert(users).values({ name }).returning();
 		if (!user) {
 			return json({ error: "Failed to create user" }, { status: 500 });
@@ -104,6 +111,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 				return json({ error: "Game not found" }, { status: 404 });
 			}
 
+			console.log("redirecting to quizz");
 			return redirect(`/quizz?userId=${user.id}&gameId=${gameId}`);
 		}
 
@@ -115,6 +123,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 			);
 		}
 
+		console.log("inserting game");
 		const [game] = await db
 			.insert(games)
 			.values({
@@ -139,6 +148,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 			return json({ error: "Failed to create game" }, { status: 500 });
 		}
 
+		console.log("redirecting to quizz");
 		return redirect(`/quizz?userId=${user.id}&gameId=${game.id}`);
 	} catch (error) {
 		console.error("Error in action:", error);
@@ -148,22 +158,43 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 export default function Index() {
 	const { defaultValues, game } = useLoaderData<typeof loader>();
+	const navigation = useNavigation();
 
 	return (
 		<div>
+			{navigation.state === "loading" && (
+				<AnimatedPopup ubication="top" margin={1} timeTransition={0.5}>
+					<div className="flex flex-col bg-black p-5">
+						<video
+							src="/search.mp4"
+							autoPlay
+							loop
+							muted
+							playsInline
+							className="w-[512px] md:w-[580px] h-auto"
+						/>
+
+						<h2 className="text-xl my-4">Building your questions...</h2>
+					</div>
+				</AnimatedPopup>
+			)}
 			<div className="container mx-auto flex flex-col items-center justify-center h-screen">
 				<AsciiArt />
 				<h1 className="md:text-xl text-2xl font-bold silkscreen-regular">
-					Generate Quizz for your favorite topic using A.I!!!
+					Generate a quiz with questions created by our AI robot!
 				</h1>
 
 				<ValidatedForm
 					validator={validator}
 					method="post"
 					defaultValues={defaultValues}
-					className="flex flex-col gap-4 mt-8"
+					className="flex flex-col gap-4 mt-12"
 				>
-					<Input name="name" label="Your name (or alias)" className="w-96" />
+					<Input
+						name="name"
+						label="Your name (or alias)"
+						className="w-full  md:w-96"
+					/>
 					{!game && (
 						<Input
 							name="topic"
