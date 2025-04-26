@@ -4,6 +4,8 @@ import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
 import db from "~/db";
 import { gameRankings, users } from "~/db/schema";
 import { eq, desc } from "drizzle-orm";
+import QRCode from "react-qr-code";
+import { ClientOnlyWrapper } from "~/components/remix-helpers/ClientOnlyWrapper";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
 	const url = new URL(request.url);
@@ -89,11 +91,20 @@ export default function Results() {
 					<h3 className="silkscreen-regular">Share Game with Friends:</h3>
 					<div className="flex items-center justify-center">
 						<Link
-							to={`${appUrl}/?game=${gameId}`}
+							to={`${appUrl}?game=${gameId}`}
 							className="text-lime-500 silkscreen-regular underline"
 						>
 							{`${appUrl}/?game=${gameId}`}
 						</Link>
+					</div>
+					<div className="bg-white m-0 w-28">
+						<ClientOnlyWrapper>
+							<QRCode
+								value={`${appUrl}?game=${gameId}`}
+								size={256}
+								style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+							/>
+						</ClientOnlyWrapper>
 					</div>
 				</div>
 

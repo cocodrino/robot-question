@@ -29,8 +29,14 @@ export const useGameStore = create<GameState>()(
             questionIndex: 0,
             correctAnswerCount: 0,
             game: null,
-            feedback: "right",
-            setGameData: (userId, game) => set({ userId, game, questionIndex: 0, correctAnswerCount: 0 }),
+            feedback: "hidden",
+            setGameData: (userId, game) => set({
+                userId,
+                game,
+                questionIndex: 0,
+                correctAnswerCount: 0,
+                feedback: "hidden"
+            }),
             setQuestionIndex: (questionIndex) => set({ questionIndex }),
             setCorrectAnswerCount: (correctAnswerCount) => set({ correctAnswerCount }),
             reset: () => set({ userId: null, game: null, questionIndex: 0, correctAnswerCount: 0 }),

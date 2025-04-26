@@ -1,6 +1,7 @@
 
-import { deepseek } from '@ai-sdk/deepseek';
+//import { deepseek } from '@ai-sdk/deepseek';
 import { Agent } from '@mastra/core/agent';
+import { groq } from '@ai-sdk/groq';
 
 
 // Herramienta para almacenar las preguntas generadas
@@ -141,11 +142,11 @@ export const quizGeneratorAgent = new Agent({
       
       Make sure to ALWAYS use the tool 'storeQuestions' to return the questions.
 `,
-  model: deepseek('deepseek-chat'),  // Usar directamente el modelo Deepseek
+  model: groq("deepseek-r1-distill-llama-70b"),
   tools: storeQuestionsTools,
 });
 
-// Agente 2: Validador de preguntas
+// TODO fix this
 export const quizValidatorAgent = new Agent({
   name: 'Quiz Validator Agent',
   instructions: `
@@ -172,6 +173,6 @@ export const quizValidatorAgent = new Agent({
       
       Check all questions thoroughly and report any errors.
 `,
-  model: deepseek('deepseek-chat'),
+  model: groq("deepseek-r1-distill-llama-70b"),
   tools: validateQuestionsTools,
 });
