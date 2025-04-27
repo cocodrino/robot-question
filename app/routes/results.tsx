@@ -94,7 +94,7 @@ export default function Results() {
 							to={`${appUrl}?game=${gameId}`}
 							className="text-lime-500 silkscreen-regular underline"
 						>
-							{`${appUrl}/?game=${gameId}`}
+							{`${appUrl}?game=${gameId}`}
 						</Link>
 					</div>
 					<div className="bg-white m-0 w-28">
