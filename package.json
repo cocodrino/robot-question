@@ -1,5 +1,6 @@
 {
 	"name": "robot-questions",
+	"license": "AGPL",
 	"private": true,
 	"sideEffects": false,
 	"type": "module",

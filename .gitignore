@@ -5,3 +5,9 @@ node_modules
 /public/build
 .env
 .history
+.env.development
+.env.production
+.env.test
+.env.test.local
+.env.production.local
+.env.development.local
