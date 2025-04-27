@@ -1,15 +1,10 @@
-import { config } from "dotenv";
-import { drizzle } from "drizzle-orm/node-postgres";
-import pkg from "pg";
+import { drizzle } from 'drizzle-orm/libsql';
+import { createClient } from '@libsql/client';
+import * as schema from './schema';
 
-const { Pool } = pkg;
-
-config({ path: ".env" });
-
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+const client = createClient({
+    url: 'file:./app/db/sqlite.db'
 });
 
-const db = drizzle(pool);
-
+const db = drizzle(client, { schema });
 export default db;

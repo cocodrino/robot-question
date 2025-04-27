@@ -1,17 +1,16 @@
 import { config } from "dotenv";
-import { drizzle } from "drizzle-orm/node-postgres";
-import pkg from "pg";
-import { migrate } from "drizzle-orm/node-postgres/migrator";
-
-const { Pool } = pkg;
+import { drizzle } from "drizzle-orm/libsql";
+import { createClient } from "@libsql/client";
+import { migrate } from "drizzle-orm/libsql/migrator";
+import * as schema from "./schema";
 
 config({ path: ".env" });
 
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+const client = createClient({
+    url: "file:./app/db/sqlite.db"
 });
 
-const db = drizzle(pool);
+const db = drizzle(client, { schema });
 
 async function main() {
     console.log("Migrating database...");
