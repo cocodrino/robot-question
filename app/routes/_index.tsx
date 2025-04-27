@@ -91,7 +91,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 			const [ipRequest] = await db
 				.select()
 				.from(ipRequests)
-				.where(and(eq(ipRequests.ip, ip), gte(ipRequests.date, yesterday)))
+				.where(
+					and(eq(ipRequests.ip, ip), gte(ipRequests.date, yesterday.getTime())),
+				)
 				.limit(1);
 
 			if (ipRequest) {
@@ -116,7 +118,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 				await db.insert(ipRequests).values({
 					ip,
 					count: 1,
-					date: today,
+					date: today.getTime(),
 				});
 			}
 		}
