@@ -2,6 +2,7 @@
 //import { deepseek } from '@ai-sdk/deepseek';
 import { Agent } from '@mastra/core/agent';
 import { groq } from '@ai-sdk/groq';
+import { deepseek } from '@ai-sdk/deepseek';
 
 
 // Herramienta para almacenar las preguntas generadas
@@ -123,7 +124,7 @@ export const quizGeneratorAgent = new Agent({
       - Generate exactly 4 possible answers (options)
       - Mark one option as the correct answer
       - Ensure questions are accurate and educational
-      - Make sure questions vary in difficulty
+      - Make sure questions vary in difficulty, from medium to hard
 
       Always format your response as an array of question objects with this exact structure:
       [
@@ -142,7 +143,7 @@ export const quizGeneratorAgent = new Agent({
       
       Make sure to ALWAYS use the tool 'storeQuestions' to return the questions.
 `,
-  model: groq("deepseek-r1-distill-llama-70b"),
+  model: deepseek("deepseek-chat"),
   tools: storeQuestionsTools,
 });
 
@@ -173,6 +174,6 @@ export const quizValidatorAgent = new Agent({
       
       Check all questions thoroughly and report any errors.
 `,
-  model: groq("deepseek-r1-distill-llama-70b"),
+  model: deepseek("deepseek-chat"),
   tools: validateQuestionsTools,
 });
